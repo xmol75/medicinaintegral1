@@ -6,7 +6,7 @@
     <title>Medicina Integrada I - Caso 1</title>
     <meta name="application-name" content="Medicina Integrada I" />
     <meta name="apple-mobile-web-app-title" content="Medicina I" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="no" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png" />
@@ -58,7 +58,7 @@
       </header>
 
       <main class="app-shell">
-        <aside class="sidebar" aria-label="Secuencia de la clase">
+        <aside class="sidebar" id="mobilePhaseMenu" aria-label="Secuencia de la clase">
           <section class="status-pane" aria-live="polite">
             <div>
               <p class="pane-label">Progreso</p>
@@ -81,6 +81,11 @@
         </section>
       </main>
 
+      <button type="button" class="mobile-phase-toggle" data-phase-menu-toggle aria-expanded="false" aria-controls="mobilePhaseMenu">
+        <span>Fases</span>
+        <strong id="mobilePhaseLabel">1/16</strong>
+      </button>
+      <button type="button" class="mobile-nav-backdrop" data-phase-menu-close aria-label="Cerrar fases"></button>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
 

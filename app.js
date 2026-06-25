@@ -33,6 +33,8 @@ const toast = document.querySelector("#toast");
 const caseEyebrow = document.querySelector("#caseEyebrow");
 const caseTitle = document.querySelector("#caseTitle");
 const caseSubtitle = document.querySelector("#caseSubtitle");
+const mobilePhaseToggle = document.querySelector("[data-phase-menu-toggle]");
+const mobilePhaseLabel = document.querySelector("#mobilePhaseLabel");
 
 const storageKey = "ceu-mi-caso1-public-ui-v1";
 let firebaseApp = null;
@@ -128,6 +130,12 @@ function showToast(message) {
   toastHandle = setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
+function setPhaseMenu(open) {
+  appRoot.classList.toggle("is-phase-menu-open", open);
+  document.body.classList.toggle("is-phase-menu-open", open);
+  mobilePhaseToggle?.setAttribute("aria-expanded", String(open));
+}
+
 function getPhases() {
   return Array.isArray(caseData?.phases) ? caseData.phases : [];
 }
@@ -168,10 +176,14 @@ function render() {
 
   const phase = currentPhase();
   ensureTimerForPhase(phase);
+  const phaseIndex = getPhases().findIndex((item) => item.id === phase?.id);
 
   caseEyebrow.textContent = caseData.eyebrow || "Medicina Integrada I";
   caseTitle.textContent = caseData.title || "Caso docente";
   caseSubtitle.textContent = caseData.subtitle || "Guía docente paso a paso";
+  if (mobilePhaseLabel) {
+    mobilePhaseLabel.textContent = phaseIndex >= 0 ? `${phaseIndex + 1}/${getPhases().length}` : "0/0";
+  }
 
   document
     .querySelectorAll("[data-session-button]")
@@ -698,6 +710,7 @@ function setPhase(phaseId) {
   state.phaseId = phaseId;
   saveState();
   render();
+  setPhaseMenu(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -830,7 +843,18 @@ document.addEventListener("click", async (event) => {
   if (!target) return;
 
   if (target.matches("[data-logout]")) {
+    setPhaseMenu(false);
     await signOut(auth);
+    return;
+  }
+
+  if (target.matches("[data-phase-menu-toggle]")) {
+    setPhaseMenu(!appRoot.classList.contains("is-phase-menu-open"));
+    return;
+  }
+
+  if (target.matches("[data-phase-menu-close]")) {
+    setPhaseMenu(false);
     return;
   }
 
@@ -838,6 +862,7 @@ document.addEventListener("click", async (event) => {
     state.session = target.dataset.sessionButton;
     saveState();
     render();
+    setPhaseMenu(false);
   }
 
   if (target.matches("[data-phase-id]")) setPhase(target.dataset.phaseId);
