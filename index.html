@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Medicina Integrada I - Caso 1</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <section class="login-screen" id="loginScreen" aria-label="Acceso docente">
+      <form class="login-card" id="loginForm">
+        <p class="eyebrow">Acceso docente</p>
+        <h1>Medicina Integrada I</h1>
+        <p class="subtitle">Caso 1 · El curioso caso de Elijah Price</p>
+
+        <label class="login-field">
+          <span>Email</span>
+          <input type="email" id="emailInput" autocomplete="username" required />
+        </label>
+
+        <label class="login-field">
+          <span>Contraseña</span>
+          <input type="password" id="passwordInput" autocomplete="current-password" required />
+        </label>
+
+        <button type="submit" class="primary-button">Entrar</button>
+        <p class="login-error" id="loginError" role="status" aria-live="polite"></p>
+        <p class="login-note">Guía privada para profesores. El contenido se carga desde Firebase tras iniciar sesión.</p>
+      </form>
+    </section>
+
+    <div class="app is-locked" id="app">
+      <header class="topbar">
+        <div class="brand-block">
+          <p class="eyebrow" id="caseEyebrow">Medicina Integrada I</p>
+          <h1 id="caseTitle">Caso docente</h1>
+          <p class="subtitle" id="caseSubtitle">Cargando contenido protegido...</p>
+        </div>
+
+        <div class="topbar-controls" aria-label="Controles de sesión">
+          <div class="segmented" role="group" aria-label="Filtro de sesión">
+            <button type="button" data-session-button="all">Todo</button>
+            <button type="button" data-session-button="1">Sesión 1</button>
+            <button type="button" data-session-button="2">Sesión 2</button>
+          </div>
+          <button type="button" class="quiet-button logout-button" data-logout>Salir</button>
+        </div>
+      </header>
+
+      <main class="app-shell">
+        <aside class="sidebar" aria-label="Secuencia de la clase">
+          <section class="status-pane" aria-live="polite">
+            <div>
+              <p class="pane-label">Progreso</p>
+              <strong id="progressText">0 fases</strong>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progressBar"></div>
+            </div>
+            <p class="microcopy" id="sessionSummary"></p>
+          </section>
+
+          <nav class="phase-list" id="phaseList" aria-label="Fases"></nav>
+        </aside>
+
+        <section class="workspace" aria-label="Guía de trabajo">
+          <section class="phase-pane" id="phasePane"></section>
+          <section class="activity-pane" id="activityPane"></section>
+          <section class="materials-pane" id="materialsPane"></section>
+        </section>
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
