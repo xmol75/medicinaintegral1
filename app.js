@@ -28,6 +28,7 @@ const materialsPane = document.querySelector("#materialsPane");
 const progressText = document.querySelector("#progressText");
 const progressBar = document.querySelector("#progressBar");
 const sessionSummary = document.querySelector("#sessionSummary");
+const currentHint = document.querySelector("#currentHint");
 const toast = document.querySelector("#toast");
 const caseEyebrow = document.querySelector("#caseEyebrow");
 const caseTitle = document.querySelector("#caseTitle");
@@ -96,6 +97,19 @@ function guidePanel(title, items, tone = "") {
     <div class="info-block ${tone}">
       <h3>${escapeHtml(title)}</h3>
       ${listItems(items)}
+    </div>
+  `;
+}
+
+function firstText(items, fallback = "Sin indicación específica.") {
+  return Array.isArray(items) && items.length ? items[0] : fallback;
+}
+
+function briefItem(label, text) {
+  return `
+    <div class="brief-item">
+      <span class="pane-label">${escapeHtml(label)}</span>
+      <p>${escapeHtml(text)}</p>
     </div>
   `;
 }
@@ -190,6 +204,7 @@ function renderEmptyState() {
   progressText.textContent = "0 fases";
   progressBar.style.width = "0%";
   sessionSummary.textContent = "";
+  currentHint.textContent = "";
   phasePane.innerHTML = `
     <div class="phase-body">
       <div class="setup-warning">
@@ -211,6 +226,13 @@ function renderProgress() {
   const s1 = phases.filter((phase) => Number(phase.session) === 1).reduce((sum, phase) => sum + Number(phase.minutes || 0), 0);
   const s2 = phases.filter((phase) => Number(phase.session) === 2).reduce((sum, phase) => sum + Number(phase.minutes || 0), 0);
   sessionSummary.textContent = `Sesión 1: ${s1} min. Sesión 2: ${s2} min.`;
+
+  const phase = currentPhase();
+  const index = phases.findIndex((item) => item.id === phase?.id);
+  const next = phases[index + 1];
+  currentHint.textContent = phase
+    ? `Ahora: ${phase.number}. ${phase.title}${next ? ` · Después: ${next.title}` : " · Última fase"}`
+    : "";
 }
 
 function renderPhaseList() {
@@ -281,6 +303,12 @@ function renderPhasePane(phase) {
     </div>
 
     <div class="phase-body">
+      <div class="teacher-brief" aria-label="Resumen operativo de la fase">
+        ${briefItem("Haz ahora", firstText(phase.teacherActions))}
+        ${briefItem("Producto esperado", firstText(phase.collect, "Que el grupo avance con una idea causal clara."))}
+        ${briefItem("Vigila", firstText(phase.watchFor, "Que el razonamiento no se quede en una etiqueta diagnóstica."))}
+      </div>
+
       <div class="script-strip">
         <div>
           <span class="pane-label">Frase de arranque</span>
@@ -295,7 +323,7 @@ function renderPhasePane(phase) {
       <div class="detail-grid">
         ${guidePanel("Minuto a minuto", phase.minutePlan, "is-priority")}
         ${guidePanel("Qué haces tú", phase.teacherActions)}
-        ${guidePanel("Qué deben hacer ellos", phase.studentActions)}
+        ${guidePanel("Qué pides al alumnado", phase.studentActions)}
         ${guidePanel("Preguntas que puedes lanzar", phase.questions || phase.ask, "is-question")}
         ${guidePanel("Qué espero escuchar", phase.expected, "is-good")}
         ${guidePanel("Si se atascan o se desvían", phase.rescue, "is-warning")}
@@ -599,13 +627,17 @@ function renderMaterials(phase) {
       <span class="duration-pill">${phaseResources.length} para esta fase</span>
     </div>
     <div class="materials-body">
+      <div class="materials-note">
+        Usa este bloque como checklist de preparación. Los archivos marcados como pendientes están previstos,
+        pero los enlazaremos cuando terminemos y subamos el material del alumno/docente.
+      </div>
       <div class="section-grid">
         <div>
           <h3>Para esta fase</h3>
           ${renderResourceList(phaseResources)}
         </div>
         <div>
-          <h3>Repositorio protegido</h3>
+          <h3>Todos los materiales previstos</h3>
           ${renderResourceList(resources)}
         </div>
       </div>
@@ -618,20 +650,29 @@ function renderResourceList(list) {
   return `
     <div class="resource-list">
       ${list
-        .map(
-          (item) => `
-            <a class="resource-row" href="${escapeHtml(item.url || "#")}" target="_blank" rel="noreferrer">
-              <span>
-                <strong>${escapeHtml(item.title)}</strong>
-                <span>${escapeHtml(item.description)}</span>
-              </span>
-              <span class="audience-pill">${escapeHtml(item.audience || "Docente")}</span>
-            </a>
-          `
-        )
+        .map((item) => renderResourceRow(item))
         .join("")}
     </div>
   `;
+}
+
+function renderResourceRow(item) {
+  const url = item.url || "";
+  const isPendingLocalFile = url.startsWith("./materiales/");
+  const rowContent = `
+    <span>
+      <strong>${escapeHtml(item.title)}</strong>
+      <span>${escapeHtml(item.description)}</span>
+      ${isPendingLocalFile ? `<span class="resource-path">Pendiente: ${escapeHtml(url.replace("./materiales/", ""))}</span>` : ""}
+    </span>
+    <span class="audience-pill">${escapeHtml(isPendingLocalFile ? "Pendiente" : item.audience || "Docente")}</span>
+  `;
+
+  if (isPendingLocalFile) {
+    return `<div class="resource-row is-pending">${rowContent}</div>`;
+  }
+
+  return `<a class="resource-row" href="${escapeHtml(url || "#")}" target="_blank" rel="noreferrer">${rowContent}</a>`;
 }
 
 function setPhase(phaseId) {
