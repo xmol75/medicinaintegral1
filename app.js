@@ -70,19 +70,10 @@ function saveState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
-function clearLoginFields() {
-  loginForm.reset();
-  emailInput.value = "";
-  passwordInput.value = "";
-}
-
 function setLocked(isLocked) {
   appRoot.classList.toggle("is-locked", isLocked);
   loginScreen.classList.toggle("is-hidden", !isLocked);
-  if (isLocked) {
-    clearLoginFields();
-    emailInput.focus();
-  }
+  if (isLocked) emailInput.focus();
 }
 
 function escapeHtml(value) {
@@ -814,5 +805,4 @@ document.addEventListener("input", (event) => {
   saveState();
 });
 
-clearLoginFields();
 initFirebase();
