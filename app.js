@@ -38,6 +38,7 @@ let firebaseApp = null;
 let auth = null;
 let db = null;
 let caseData = null;
+let loadProblem = null;
 let timerHandle = null;
 let toastHandle = null;
 let state = loadState();
@@ -170,6 +171,19 @@ function render() {
 }
 
 function renderEmptyState() {
+  const details = {
+    missing:
+      "El documento no existe todavía. Crea o importa el documento teacherCases/caso1 en Firestore.",
+    "permission-denied":
+      "Firebase ha bloqueado la lectura. Revisa que el usuario esté autorizado en las reglas de Firestore.",
+    unavailable:
+      "Firestore no está disponible ahora mismo. Revisa la conexión y vuelve a intentarlo."
+  };
+  const detail =
+    details[loadProblem?.code] ||
+    loadProblem?.message ||
+    "Comprueba que existe en Firestore y que el usuario autenticado tiene permiso de lectura.";
+
   caseTitle.textContent = "Contenido no cargado";
   caseSubtitle.textContent = "Revisa Firebase Auth, Firestore y las reglas de acceso.";
   phaseList.innerHTML = "";
@@ -180,7 +194,7 @@ function renderEmptyState() {
     <div class="phase-body">
       <div class="setup-warning">
         No se ha podido cargar el documento protegido <strong>${escapeHtml(caseDocumentPath)}</strong>.
-        Comprueba que existe en Firestore y que el usuario autenticado tiene permiso de lectura.
+        ${escapeHtml(detail)}
       </div>
     </div>
   `;
@@ -695,10 +709,12 @@ async function loadProtectedCase() {
   const snapshot = await getDoc(caseRef);
   if (!snapshot.exists()) {
     caseData = null;
+    loadProblem = { code: "missing" };
     render();
     return;
   }
   caseData = snapshot.data();
+  loadProblem = null;
   render();
 }
 
@@ -717,6 +733,7 @@ async function initFirebase() {
       stopTimer();
       setLocked(true);
       caseData = null;
+      loadProblem = null;
       return;
     }
 
@@ -724,6 +741,7 @@ async function initFirebase() {
     loginError.textContent = "";
     await loadProtectedCase().catch((error) => {
       caseData = null;
+      loadProblem = { code: error.code, message: error.message };
       render();
       showToast("No se pudo cargar Firestore");
       console.error(error);
