@@ -225,7 +225,7 @@ function renderProgress() {
 
   const s1 = phases.filter((phase) => Number(phase.session) === 1).reduce((sum, phase) => sum + Number(phase.minutes || 0), 0);
   const s2 = phases.filter((phase) => Number(phase.session) === 2).reduce((sum, phase) => sum + Number(phase.minutes || 0), 0);
-  sessionSummary.textContent = `Sesión 1: ${s1} min. Sesión 2: ${s2} min.`;
+  sessionSummary.textContent = caseData.scheduleSummary || `Sesión 1: ${s1} min. Sesión 2: ${s2} min.`;
 
   const phase = currentPhase();
   const index = phases.findIndex((item) => item.id === phase?.id);
@@ -356,6 +356,24 @@ function renderActivity(phase) {
 
 function activityHtml(phase) {
   if (!phase) return "";
+  if (phase.activity === "break") {
+    return `
+      <div class="section-grid">
+        <div class="info-block is-priority">
+          <h3>Gestión del descanso</h3>
+          ${listItems([
+            "Di la hora exacta de reinicio.",
+            "Deja visible la siguiente fase.",
+            "Usa el temporizador para no comerte el bloque siguiente."
+          ])}
+        </div>
+        <div class="info-block">
+          <h3>Al volver</h3>
+          ${listItems(phase.focus || ["Retomar la fase siguiente sin recapitular todo."])}
+        </div>
+      </div>
+    `;
+  }
   if (phase.activity === "irat" || phase.activity === "trat") return renderIratActivity(phase);
   if (phase.activity === "tapp") return renderTappActivity();
   if (phase.activity === "feedback") return renderFeedbackActivity();
